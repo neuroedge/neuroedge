@@ -1,0 +1,79 @@
+---
+title: "Data Visualization Assignment 1"
+author: "Weelic Chong"
+date: "7/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Description of the problem
+
+You have collected the expression values of two proteins (x, y), which are found in the blood, from four different hospitals. The dataset provided has been organized for you. In the Hospital_dataset.xlsx provided below each column presents the expression values of protein x and y for each of the hospitals.
+
+**You would like to compare**
+
+the expression levels of proteins x among the hospitals
+the expression levels of proteins y among the hospitals
+the relationship between the expression of protein x and y within each hospital
+
+**about the dataset**
+Because the dataset was provided in xlsx, i have converted it to csv. The structure of the dataset is unchanged, under than the first row, containing 'hospital 1' 'hospital 2' ...etc.. was removed. The second row has 'x1','y1' 'x2', 'y2'.. which means x1 and y1 belongs to hospital 1, x2 and y2 belongs to hospital 2, and so on.
+
+https://jefferson.instructure.com/courses/8068/files/2184438/download?wrap=1
+
+```{r dataset}
+
+library(RCurl)
+x <- getURL("https://raw.githubusercontent.com/neuroedge/neuroedge/tuesday/Hospital_dataset.csv")
+raw_data <- read.csv(text = x)
+
+#raw_data <- read.csv(file = "Hospital_dataset.csv",sep = ",", header = T, row.names=NULL)
+
+#but to do this more simply, I will change the shape of the data, so that it has 3 columns: 'x' , 'y', and hospital
+final_data <- data.frame(
+  protein_x = c(raw_data$x1,raw_data$x2,raw_data$x3,raw_data$x4),
+  protein_y = c(raw_data$y1,raw_data$y2,raw_data$y3,raw_data$y4),
+  hospital = rep(1:4, each=length(raw_data$x1))
+)
+
+final_data$hospital <- as.factor(final_data$hospital)
+#load ggplot2 into memory
+library(ggplot2)
+
+```
+
+## Expression levels of protein x among the hospitals
+
+To do this, we will make a boxplot of each protein x, showing the actual datapoints, as well as the interquartile range. 
+
+```{r protein_x}
+a <- ggplot(final_data, aes(x = hospital, y = protein_x, fill = hospital))
+a + geom_boxplot() + geom_dotplot(binaxis='y', stackdir='center', dotsize=1) + theme_minimal() + labs(title="Expression levels of protein x among hospitals",x="Hospitals", y = "Protein X")
+
+```
+
+## Expression levels of protein y among the hospitals
+
+Similarly, we will make a boxplot of each protein y, showing the actual datapoints, as well as the interquartile range. Code is hidden for brevity.
+
+```{r protein_y, echo=FALSE}
+b <- ggplot(final_data, aes(x = hospital, y = protein_y, fill=hospital))
+b + geom_boxplot() + geom_dotplot(binaxis='y', stackdir='center', dotsize=1) + theme_minimal() + labs(title="Expression levels of protein Y among hospitals",x="Hospitals", y = "Protein Y")
+```
+
+
+## Expression levels of protein x and y among each hospital
+
+We can do a scatter plot to compare x and y within each hospital:
+
+```{r x_y_scatter, echo=FALSE}
+c <- ggplot(final_data, aes(x = protein_x, y=protein_y, color=hospital, shape=hospital))
+c + geom_jitter() + theme_minimal()
+```
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The colors and size of points, size of labels, and others need to be tweaked, but can be done later.
